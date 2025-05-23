@@ -11,7 +11,7 @@ export default function App() {
     setAnswer("");
 
     try {
-      const res = await fetch("https://gemini-api.onrender.com/ask", {
+      const res = await fetch("https://gemini-api-2sw1.onrender.com/ask", { 
       // const res = await fetch("http://localhost:8000/ask", { FOR LOCAL TESTING
         method: "POST",
         headers: { "Content-Type": "application/json" },
