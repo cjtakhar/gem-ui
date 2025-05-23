@@ -1,4 +1,6 @@
 import { useState } from "react";
+import DOMPurify from "dompurify";
+import { marked } from "marked";
 
 export default function App() {
   const [question, setQuestion] = useState("");
@@ -11,21 +13,21 @@ export default function App() {
     setAnswer("");
 
     try {
-      const res = await fetch("https://gemini-api-2sw1.onrender.com/ask", { 
-      // const res = await fetch("http://localhost:8000/ask", { FOR LOCAL TESTING
+      const res = await fetch("https://gemini-api-2sw1.onrender.com/ask", {
+        // Or use http://localhost:8000/ask for local dev
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question }),
       });
 
       const data = await res.json();
-      setAnswer(data.answer || "No response received");
+
+      // Convert Markdown to HTML and sanitize
+      const rawHtml = await marked.parse(data.answer || "No response received");
+      const safeHtml = DOMPurify.sanitize(rawHtml);
+      setAnswer(safeHtml);
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setAnswer("Error: " + err.message);
-      } else {
-        setAnswer("An unknown error occurred");
-      }
+      setAnswer(err instanceof Error ? "Error: " + err.message : "Unknown error occurred.");
     } finally {
       setLoading(false);
     }
@@ -55,9 +57,9 @@ export default function App() {
           </button>
         </div>
 
-        <div className="bg-teal-50 border border-teal-200 rounded p-6 shadow-sm whitespace-pre-wrap">
-          <h2 className="text-xl font-semibold mb-2 text-teal-700">Answer:</h2>
-          <p className="text-gray-800 leading-relaxed">{answer}</p>
+        <div className="prose max-w-none bg-teal-50 border border-teal-200 rounded p-6 shadow-sm">
+          <h2 className="text-xl font-semibold mb-4 text-teal-700">Answer:</h2>
+          <div dangerouslySetInnerHTML={{ __html: answer }} />
         </div>
       </div>
     </div>
